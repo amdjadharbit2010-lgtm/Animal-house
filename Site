@@ -1,0 +1,382 @@
+import { useState, useRef, useEffect } from "react";
+
+// ── Translations ──────────────────────────────────────────────
+const T = {
+  ar: {
+    dir: "rtl", appName: "بيت الحيوانات", login: "دخول", register: "إنشاء حساب",
+    email: "البريد الإلكتروني", password: "كلمة المرور", fullName: "الاسم الكامل",
+    haveAccount: "عندي حساب بالفعل", noAccount: "إنشاء حساب جديد",
+    home: "الرئيسية", profile: "الملف الشخصي", settings: "الإعدادات",
+    add: "إضافة حيوان", all: "الكل", cat: "قط", dog: "كلب", rabbit: "أرنب", other: "أخرى",
+    free: "مجاني", price: "بسعر", publish: "نشر الإعلان", back: "رجوع",
+    animalName: "اسم الحيوان", approxAge: "العمر التقريبي", category: "النوع",
+    country: "البلد", city: "المدينة", uploadPhoto: "اضغط لرفع صورة",
+    noAds: "لا توجد إعلانات بعد", addFirst: "اضغط + لإضافة أول حيوان",
+    chat: "شات", send: "إرسال", typeMsg: "اكتب رسالة...",
+    followers: "متابع", deals: "صفقة", ads: "إعلان", follow: "متابعة +",
+    addBio: "اضغط لإضافة نبذة...", save: "حفظ", logout: "تسجيل الخروج",
+    report: "إبلاغ", reportReason: "سبب الإبلاغ", reportSend: "إرسال البلاغ",
+    reportSent: "تم إرسال البلاغ ✓", rateApp: "تقييم الموقع",
+    rateAppDesc: "كيف تقيم تجربتك؟", submitRating: "إرسال التقييم",
+    ratedThanks: "شكراً على تقييمك! ✓", language: "اللغة",
+    priceLabel: "السعر بالعملة المحلية", locationLabel: "الموقع",
+    fieldRequired: "يرجى ملء الحقل", photoRequired: "يرجى إضافة صورة",
+    nameRequired: "يرجى كتابة الاسم", errorLogin: "البريد أو كلمة المرور غير صحيحة",
+    errorExist: "البريد مستخدم بالفعل", errorFields: "يرجى ملء جميع الحقول",
+    sendPhoto: "إرسال صورة", noMessages: "لا توجد رسائل بعد، ابدأ المحادثة!",
+    chatWith: "شات مع", myChats: "رسائلي", noChats: "لا توجد محادثات بعد",
+    reportPlaceholder: "اكتب سبب الإبلاغ بالتفصيل...",
+  },
+  en: {
+    dir: "ltr", appName: "Pet House", login: "Login", register: "Create Account",
+    email: "Email", password: "Password", fullName: "Full Name",
+    haveAccount: "I already have an account", noAccount: "Create new account",
+    home: "Home", profile: "Profile", settings: "Settings",
+    add: "Add Animal", all: "All", cat: "Cat", dog: "Dog", rabbit: "Rabbit", other: "Other",
+    free: "Free", price: "Paid", publish: "Publish", back: "Back",
+    animalName: "Animal Name", approxAge: "Approximate Age", category: "Type",
+    country: "Country", city: "City", uploadPhoto: "Tap to upload photo",
+    noAds: "No listings yet", addFirst: "Tap + to add first animal",
+    chat: "Chat", send: "Send", typeMsg: "Type a message...",
+    followers: "Followers", deals: "Deals", ads: "Listings", follow: "Follow +",
+    addBio: "Tap to add bio...", save: "Save", logout: "Logout",
+    report: "Report", reportReason: "Reason for report", reportSend: "Send Report",
+    reportSent: "Report sent ✓", rateApp: "Rate the App",
+    rateAppDesc: "How do you rate your experience?", submitRating: "Submit Rating",
+    ratedThanks: "Thanks for your rating! ✓", language: "Language",
+    priceLabel: "Price in local currency", locationLabel: "Location",
+    fieldRequired: "Please fill this field", photoRequired: "Please add a photo",
+    nameRequired: "Please enter a name", errorLogin: "Wrong email or password",
+    errorExist: "Email already in use", errorFields: "Please fill all fields",
+    sendPhoto: "Send Photo", noMessages: "No messages yet, start the conversation!",
+    chatWith: "Chat with", myChats: "My Chats", noChats: "No conversations yet",
+    reportPlaceholder: "Describe the reason in detail...",
+  },
+  fr: {
+    dir: "ltr", appName: "Maison des Animaux", login: "Connexion", register: "Créer un compte",
+    email: "E-mail", password: "Mot de passe", fullName: "Nom complet",
+    haveAccount: "J'ai déjà un compte", noAccount: "Créer un nouveau compte",
+    home: "Accueil", profile: "Profil", settings: "Paramètres",
+    add: "Ajouter un animal", all: "Tous", cat: "Chat", dog: "Chien", rabbit: "Lapin", other: "Autre",
+    free: "Gratuit", price: "Payant", publish: "Publier", back: "Retour",
+    animalName: "Nom de l'animal", approxAge: "Âge approximatif", category: "Type",
+    country: "Pays", city: "Ville", uploadPhoto: "Appuyez pour télécharger",
+    noAds: "Aucune annonce", addFirst: "Appuyez + pour ajouter",
+    chat: "Chat", send: "Envoyer", typeMsg: "Écrire un message...",
+    followers: "Abonnés", deals: "Transactions", ads: "Annonces", follow: "Suivre +",
+    addBio: "Appuyez pour ajouter une bio...", save: "Enregistrer", logout: "Déconnexion",
+    report: "Signaler", reportReason: "Raison du signalement", reportSend: "Envoyer",
+    reportSent: "Signalement envoyé ✓", rateApp: "Évaluer l'app",
+    rateAppDesc: "Comment évaluez-vous votre expérience?", submitRating: "Soumettre",
+    ratedThanks: "Merci pour votre avis! ✓", language: "Langue",
+    priceLabel: "Prix en monnaie locale", locationLabel: "Localisation",
+    fieldRequired: "Veuillez remplir ce champ", photoRequired: "Veuillez ajouter une photo",
+    nameRequired: "Veuillez entrer un nom", errorLogin: "Email ou mot de passe incorrect",
+    errorExist: "Email déjà utilisé", errorFields: "Veuillez remplir tous les champs",
+    sendPhoto: "Envoyer une photo", noMessages: "Pas de messages, commencez!",
+    chatWith: "Chat avec", myChats: "Mes chats", noChats: "Pas de conversations",
+    reportPlaceholder: "Décrivez la raison en détail...",
+  },
+  es: {
+    dir: "ltr", appName: "Casa de Animales", login: "Entrar", register: "Crear cuenta",
+    email: "Correo", password: "Contraseña", fullName: "Nombre completo",
+    haveAccount: "Ya tengo cuenta", noAccount: "Crear nueva cuenta",
+    home: "Inicio", profile: "Perfil", settings: "Ajustes",
+    add: "Añadir animal", all: "Todo", cat: "Gato", dog: "Perro", rabbit: "Conejo", other: "Otro",
+    free: "Gratis", price: "De pago", publish: "Publicar", back: "Volver",
+    animalName: "Nombre del animal", approxAge: "Edad aproximada", category: "Tipo",
+    country: "País", city: "Ciudad", uploadPhoto: "Toca para subir foto",
+    noAds: "Sin anuncios aún", addFirst: "Toca + para añadir",
+    chat: "Chat", send: "Enviar", typeMsg: "Escribe un mensaje...",
+    followers: "Seguidores", deals: "Tratos", ads: "Anuncios", follow: "Seguir +",
+    addBio: "Toca para añadir bio...", save: "Guardar", logout: "Cerrar sesión",
+    report: "Reportar", reportReason: "Razón del reporte", reportSend: "Enviar reporte",
+    reportSent: "Reporte enviado ✓", rateApp: "Valorar la app",
+    rateAppDesc: "¿Cómo valoras tu experiencia?", submitRating: "Enviar valoración",
+    ratedThanks: "¡Gracias por tu valoración! ✓", language: "Idioma",
+    priceLabel: "Precio en moneda local", locationLabel: "Ubicación",
+    fieldRequired: "Por favor rellena este campo", photoRequired: "Por favor añade una foto",
+    nameRequired: "Por favor escribe el nombre", errorLogin: "Email o contraseña incorrectos",
+    errorExist: "Email ya en uso", errorFields: "Por favor rellena todos los campos",
+    sendPhoto: "Enviar foto", noMessages: "Sin mensajes, ¡empieza la conversación!",
+    chatWith: "Chat con", myChats: "Mis chats", noChats: "Sin conversaciones",
+    reportPlaceholder: "Describe la razón en detalle...",
+  },
+  zh: {
+    dir: "ltr", appName: "宠物之家", login: "登录", register: "创建账户",
+    email: "电子邮件", password: "密码", fullName: "全名",
+    haveAccount: "我已有账户", noAccount: "创建新账户",
+    home: "首页", profile: "个人资料", settings: "设置",
+    add: "添加动物", all: "全部", cat: "猫", dog: "狗", rabbit: "兔子", other: "其他",
+    free: "免费", price: "付费", publish: "发布", back: "返回",
+    animalName: "动物名称", approxAge: "大概年龄", category: "类型",
+    country: "国家", city: "城市", uploadPhoto: "点击上传照片",
+    noAds: "暂无广告", addFirst: "点击+添加第一个动物",
+    chat: "聊天", send: "发送", typeMsg: "输入消息...",
+    followers: "粉丝", deals: "交易", ads: "广告", follow: "关注+",
+    addBio: "点击添加简介...", save: "保存", logout: "退出登录",
+    report: "举报", reportReason: "举报原因", reportSend: "发送举报",
+    reportSent: "举报已发送 ✓", rateApp: "评价应用",
+    rateAppDesc: "您如何评价您的体验？", submitRating: "提交评价",
+    ratedThanks: "感谢您的评价！✓", language: "语言",
+    priceLabel: "当地货币价格", locationLabel: "位置",
+    fieldRequired: "请填写此字段", photoRequired: "请添加照片",
+    nameRequired: "请输入名称", errorLogin: "邮箱或密码错误",
+    errorExist: "邮箱已被使用", errorFields: "请填写所有字段",
+    sendPhoto: "发送照片", noMessages: "暂无消息，开始对话吧！",
+    chatWith: "与...聊天", myChats: "我的聊天", noChats: "暂无对话",
+    reportPlaceholder: "详细描述举报原因...",
+  },
+};
+
+const COUNTRIES = [
+  "الجزائر","المغرب","تونس","مصر","السعودية","الإمارات","قطر","الكويت","العراق","سوريا",
+  "لبنان","الأردن","ليبيا","السودان","فرنسا","إسبانيا","ألمانيا","المملكة المتحدة",
+  "الولايات المتحدة","كندا","الصين","تركيا","أخرى"
+];
+
+const LANG_NAMES = { ar:"العربية", en:"English", fr:"Français", es:"Español", zh:"中文" };
+
+// ── Helpers ───────────────────────────────────────────────────
+function Avatar({ name, size = 40 }) {
+  const colors = ["#e8a87c","#85c1a3","#7eb8d4","#c49bbf","#e8c97e","#a3c4e8"];
+  const c = colors[(name || "?").charCodeAt(0) % colors.length];
+  return (
+    <div style={{ width: size, height: size, borderRadius: "50%", background: c,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontWeight: 700, fontSize: size * 0.4, color: "#fff", flexShrink: 0 }}>
+      {(name || "?")[0]}
+    </div>
+  );
+}
+
+function Stars({ rating, onChange, size = 20 }) {
+  const [hov, setHov] = useState(0);
+  return (
+    <div style={{ display: "flex", gap: 2 }}>
+      {[1,2,3,4,5].map(s => (
+        <span key={s}
+          onClick={() => onChange && onChange(s)}
+          onMouseEnter={() => onChange && setHov(s)}
+          onMouseLeave={() => onChange && setHov(0)}
+          style={{ fontSize: size, cursor: onChange ? "pointer" : "default",
+            color: s <= (hov || rating) ? "#f5a623" : "#ddd", transition: "color 0.15s" }}>★</span>
+      ))}
+    </div>
+  );
+}
+
+// ── Main App ──────────────────────────────────────────────────
+export default function App() {
+  const [lang, setLang] = useState("ar");
+  const t = T[lang];
+  const dir = t.dir;
+
+  const [page, setPage] = useState("login");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [animals, setAnimals] = useState([]);
+  const [filterCat, setFilterCat] = useState("all");
+  const [viewProfile, setViewProfile] = useState(null);
+  const [chatTarget, setChatTarget] = useState(null); // {userId, animalId}
+  const [chats, setChats] = useState({}); // { "uid1-uid2-animalId": [{from,text,imageUrl,time}] }
+
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [regForm, setRegForm] = useState({ name: "", email: "", password: "" });
+  const [addForm, setAddForm] = useState({ name:"", age:"", price:"", isFree:true, category:"cat", country:"", city:"", image:null, imageUrl:"" });
+  const [bioEdit, setBioEdit] = useState(false);
+  const [bioText, setBioText] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [addError, setAddError] = useState("");
+
+  // Chat input
+  const [chatMsg, setChatMsg] = useState("");
+  const chatEndRef = useRef(null);
+
+  // Settings modals
+  const [showReport, setShowReport] = useState(null); // animal or user id
+  const [reportText, setReportText] = useState("");
+  const [reportSent, setReportSent] = useState(false);
+  const [showRateApp, setShowRateApp] = useState(false);
+  const [appRating, setAppRating] = useState(0);
+  const [appRated, setAppRated] = useState(false);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chats, chatTarget]);
+
+  const S = {
+    page: { minHeight: "100vh", background: "#fdf6ee", fontFamily: lang === "zh" ? "'PingFang SC','Microsoft YaHei',sans-serif" : "'Tajawal','Segoe UI',sans-serif", direction: dir },
+    card: { background: "#fff", borderRadius: 16, boxShadow: "0 2px 16px #0001", padding: 20 },
+    input: { width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid #e0d5c8", fontSize: 15, outline: "none", boxSizing: "border-box", fontFamily: "inherit", background: "#fdf6ee", direction: dir },
+    btn: { padding: "10px 22px", borderRadius: 10, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "inherit" },
+    primary: { background: "#c07b54", color: "#fff" },
+    secondary: { background: "#eee", color: "#555" },
+  };
+
+  // ── Chat key ──
+  function chatKey(uid1, uid2, animalId) {
+    return [Math.min(uid1, uid2), Math.max(uid1, uid2), animalId].join("-");
+  }
+
+  function getMessages() {
+    if (!chatTarget || !currentUser) return [];
+    return chats[chatKey(currentUser.id, chatTarget.userId, chatTarget.animalId)] || [];
+  }
+
+  function sendMessage(imageUrl = null) {
+    if (!chatMsg.trim() && !imageUrl) return;
+    const key = chatKey(currentUser.id, chatTarget.userId, chatTarget.animalId);
+    const msg = { from: currentUser.id, text: chatMsg.trim(), imageUrl, time: Date.now() };
+    setChats(prev => ({ ...prev, [key]: [...(prev[key] || []), msg] }));
+    setChatMsg("");
+  }
+
+  function sendImageInChat(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => sendMessage(ev.target.result);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }
+
+  // ── Auth ──
+  function handleLogin() {
+    setAuthError("");
+    const u = users.find(u => u.email === loginForm.email && u.password === loginForm.password);
+    if (!u) { setAuthError(t.errorLogin); return; }
+    setCurrentUser(u); setPage("home");
+  }
+
+  function handleRegister() {
+    setAuthError("");
+    if (!regForm.name || !regForm.email || !regForm.password) { setAuthError(t.errorFields); return; }
+    if (users.find(u => u.email === regForm.email)) { setAuthError(t.errorExist); return; }
+    const nu = { id: Date.now(), name: regForm.name, email: regForm.email, password: regForm.password, bio: "", rating: 0, ratingCount: 0, followers: 0, deals: 0 };
+    setUsers(p => [...p, nu]); setCurrentUser(nu); setPage("home");
+  }
+
+  function handleAddAnimal() {
+    setAddError("");
+    if (!addForm.image) { setAddError(t.photoRequired); return; }
+    if (!addForm.name) { setAddError(t.nameRequired); return; }
+    const na = {
+      id: Date.now(), ownerId: currentUser.id, ownerName: currentUser.name,
+      name: addForm.name, age: addForm.age,
+      price: addForm.isFree ? t.free : addForm.price,
+      isFree: addForm.isFree, category: addForm.category,
+      country: addForm.country, city: addForm.city,
+      imageUrl: addForm.imageUrl,
+    };
+    setAnimals(p => [...p, na]);
+    setAddForm({ name:"", age:"", price:"", isFree:true, category:"cat", country:"", city:"", image:null, imageUrl:"" });
+    setPage("home");
+  }
+
+  function handleImageUpload(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setAddForm(f => ({ ...f, image: file, imageUrl: ev.target.result }));
+    reader.readAsDataURL(file);
+  }
+
+  function handleFollow(uid) {
+    setUsers(p => p.map(u => u.id === uid ? { ...u, followers: u.followers + 1 } : u));
+    setViewProfile(v => v && v.id === uid ? { ...v, followers: v.followers + 1 } : v);
+  }
+
+  function handleRateUser(uid, stars) {
+    setUsers(p => p.map(u => {
+      if (u.id !== uid) return u;
+      const nc = u.ratingCount + 1, nr = ((u.rating * u.ratingCount) + stars) / nc;
+      return { ...u, rating: nr, ratingCount: nc };
+    }));
+    setViewProfile(v => {
+      if (!v || v.id !== uid) return v;
+      const nc = v.ratingCount + 1, nr = ((v.rating * v.ratingCount) + stars) / nc;
+      return { ...v, rating: nr, ratingCount: nc };
+    });
+  }
+
+  function saveBio() {
+    setUsers(p => p.map(u => u.id === currentUser.id ? { ...u, bio: bioText } : u));
+    setCurrentUser(u => ({ ...u, bio: bioText })); setBioEdit(false);
+  }
+
+  function sendReport() {
+    // In real app: send email. Here we simulate.
+    setReportSent(true);
+    setTimeout(() => { setShowReport(null); setReportText(""); setReportSent(false); }, 2000);
+  }
+
+  const CATS = [
+    { key:"all", label: t.all },
+    { key:"cat", label: t.cat },
+    { key:"dog", label: t.dog },
+    { key:"rabbit", label: t.rabbit },
+    { key:"other", label: t.other },
+  ];
+  const getCatLabel = (k) => CATS.find(c => c.key === k)?.label || k;
+
+  const filtered = filterCat === "all" ? animals : animals.filter(a => a.category === filterCat);
+  const userAnimals = uid => animals.filter(a => a.ownerId === uid);
+  const getUserById = id => users.find(u => u.id === id);
+
+  // My conversations list
+  const myConvos = Object.entries(chats).filter(([key]) => {
+    const parts = key.split("-");
+    return parts[0] == currentUser?.id || parts[1] == currentUser?.id;
+  });
+
+  // ── Report modal ──
+  const ReportModal = ({ targetLabel }) => (
+    <div style={{ position:"fixed", inset:0, background:"#0006", zIndex:100, display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ ...S.card, width:320, direction:dir }}>
+        <h3 style={{ margin:"0 0 12px", color:"#c07b54" }}>{t.report}: {targetLabel}</h3>
+        {reportSent
+          ? <div style={{ textAlign:"center", color:"#27ae60", fontSize:18, padding:20 }}>{t.reportSent}</div>
+          : <>
+            <textarea style={{ ...S.input, minHeight:100, resize:"vertical", marginBottom:12 }}
+              placeholder={t.reportPlaceholder} value={reportText}
+              onChange={e => setReportText(e.target.value)} />
+            <div style={{ display:"flex", gap:8 }}>
+              <button style={{ ...S.btn, ...S.primary, flex:1 }} onClick={sendReport}>{t.reportSend}</button>
+              <button style={{ ...S.btn, ...S.secondary }} onClick={() => { setShowReport(null); setReportText(""); }}>{t.back}</button>
+            </div>
+          </>
+        }
+      </div>
+    </div>
+  );
+
+  // ── Rate App modal ──
+  const RateAppModal = () => (
+    <div style={{ position:"fixed", inset:0, background:"#0006", zIndex:100, display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ ...S.card, width:300, textAlign:"center", direction:dir }}>
+        <div style={{ fontSize:40, marginBottom:8 }}>⭐</div>
+        <h3 style={{ color:"#c07b54", margin:"0 0 6px" }}>{t.rateApp}</h3>
+        <p style={{ color:"#888", fontSize:14, marginBottom:16 }}>{t.rateAppDesc}</p>
+        {appRated
+          ? <div style={{ color:"#27ae60", fontSize:18 }}>{t.ratedThanks}</div>
+          : <>
+            <div style={{ display:"flex", justifyContent:"center", marginBottom:16 }}>
+              <Stars rating={appRating} onChange={setAppRating} size={32} />
+            </div>
+            <div style={{ display:"flex", gap:8 }}>
+              <button style={{ ...S.btn, ...S.primary, flex:1 }} onClick={() => { setAppRated(true); setTimeout(()=>{setShowRateApp(false);setAppRated(false);setAppRating(0);},2000); }}>{t.submitRating}</button>
+              <button style={{ ...S.btn, ...S.secondary }} onClick={() => setShowRateApp(false)}>{t.back}</button>
+            </div>
+          </>
+        }
+      </div>
+    </div>
+  );
+
+  // ── Bottom Nav ──
+  const BottomNav = () => (
+    <div style={{ position:"fixed", bottom:0, left:0, right:0, background:"#fff", boxShadow:"0 -2px 12px #0001", display:"flex", justifyContent:"space-around", padding:"10px 0", zIndex:10 }}>
+      <button style={{ background:"none", border:"none", cursor:"pointer", fontSize:22, color: page==="home" ? "#c07b54" : "#aaa" }} onClick={() => setPage("home")}>🏠</button>
+      <button style={{ background:"none", border:"none", cursor:"pointer", fontSize:22, color: page==="chats" ? "#c07b54" : "#aaa" }} onClick={() => setPage("chats")}>💬</button>
+      <button style={{ background:"none", border:"none", cursor:"pointer", fontSize:22, color: page==="profile" ? "#c07b54" : "#aaa" }} onClick={() => { setViewProfile(null); setPage("profile"); }}>👤</button>
+      <button style={{ background:"none", border:"none", cursor:"pointer", fontSize:22, color: page==="settings" ? "#c07b54" : "#aaa" }} o
